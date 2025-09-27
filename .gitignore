@@ -63,5 +63,8 @@ Thumbs.db
 .vscode/
 .idea/
 
+# evitar lab resumen porque hay un libro
+Lab/Resumen/
 # Keep only .tex files and final PDFs
 # Everything else will be ignored by default
+
