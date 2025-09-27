@@ -1,0 +1,63 @@
+\item \textit{Expansión - Modificación} Haz un función en python que reciba una cadena semilla y que con probabilidad \texttt{p} mute alguna posición elegida con probabilidad uniforme de la cadena original y con \texttt{1-p} la concatene con ella misma. \vspace{03mm}
+
+
+\schema 
+    {\schemabox {$ \hspace{6cm} f(\sigma) \gets$ }}
+    {
+    {\schemabox{muta$(\sigma) \hspace{1.7cm}$ \texttt{p} \\ 
+    $\sigma\sigma\hspace{2.5cm}$ \texttt{1 - p}}
+    }
+    } \vspace{02mm}
+
+Otra función debe recibir una cantidad de iteraciones para aplicar esta función. El alfabeto a usar es $ \Sigma = \{0, 1\}$\vspace{01mm}
+
+Ejemplo:
+
+\begin{verbatim}
+        cadena=0
+        cad_final = itera_n_veces (f(cadena(0.25)), 5)
+        cad_final
+        00100010
+\end{verbatim}
+
+\vspace{.3cm}
+
+\definecolor{bibi}{RGB}{0,103,148}
+\textcolor{bibi}{Función única en Colab}
+
+\vspace{.3cm}
+
+\begin{quote}
+    Para este ejercicio igualmente hicimos uso de Google Colab, aquí esta el código:
+    \vspace{.3cm}
+    {\fontsize{8}{10}\selectfont
+        \begin{minted}{Python}
+import random
+
+def modificaCadena(cadena : str, p : float, iteraciones = 1) -> str:
+  def muta(cadena : str) -> str:
+    posicion = random.randint(0,len(cadena)-1)
+    ch = "0" if cadena[posicion]=="1" else "1"
+    return cadena[:posicion]+ch+cadena[posicion+1:]
+
+  while iteraciones > 0:
+    iteraciones-=1
+    if random.random() <= p:
+      cadena = muta(cadena)
+    else:
+      cadena += cadena
+
+  return cadena
+
+print(modificaCadena("0", .25, 5))
+        \end{minted}
+    }
+    \vspace{.3cm}
+
+    La idea es sencilla, tomamos los argumentos que se nos pide, mientras haya iteraciones por
+    hacer vemos si caemos dentro del caso de mutación o caso de duplicación, en el caso de
+    mutación, buscamos una posición aleatoria dentro de la cadena, y cambiamos el carácter
+    dependiendo de su valor inicial. Como nota, usamos una sola función para ambas cosas con
+    un parámetro opcional iteraciones. 
+\end{quote}
+ \vspace{.5cm}

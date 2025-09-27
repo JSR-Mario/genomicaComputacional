@@ -1,0 +1,24 @@
+\item \textit{Raro} Determina la complejidad temporal en el peor caso usando la notación O grande del siguiente algoritmo
+
+\begin{minipage}{0.7\textwidth}
+\begin{algorithm}[H]
+\caption{Raro}
+\KwIn{$n \in Z$}
+\KwOut{$x$ e $y$ actualizados}
+
+$i, j, x, y \gets $ int\;
+
+\For{$i \gets 1 \textbf{ to } n$ }{
+    \If{$i \hspace{01mm} is \hspace{01mm} odd$}{
+        \For{$j \gets 1 \textbf{ to } n$ }{
+        $x \gets x + 1$\;
+        }
+        \For{$j \gets 1 \textbf{ to } i$ }{
+        $y \gets y+ 1$\;
+        }
+    }
+}
+\end{algorithm}
+
+\end{minipage}
+\vspace{3mm}

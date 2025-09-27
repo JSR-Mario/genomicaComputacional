@@ -1,0 +1,32 @@
+\item \textit{Algoritmo misterio} Haz un \textit{script} en python que reciba como entrada un entero mismo que será usado como la cantidad de iteraciones de las siguientes instrucciones
+
+\begin{minipage}{0.7\textwidth}
+\begin{algorithm}[H]
+\caption{Misterio}
+\KwIn{$M$ iteraciones}
+\KwOut{Número flotante $x$}
+
+$i \gets 1$\;
+$D \gets 0$\;
+
+\While{$i < M$}{
+    $i \gets i + 1$\;
+    $x \gets -1 \leq uniform() \leq 1$\;
+    $y \gets -1 \leq uniform() \leq 1$\;
+    $d \gets \sqrt{x^2 + y^2}$\;
+    \If{$d \leq 1$}{
+        $D \gets D + 1$\;
+    }
+}
+
+$x \gets 4 \cdot D / i$\;
+\Return $x$\;
+
+\end{algorithm}
+
+\end{minipage}
+\vspace{3mm}
+
+\textbf{Tip:} Revisa la documentación del paquete \texttt{random}, particularmente de la biblioteca de \texttt{numpy}.\vspace{1mm}
+
+¿Qué está calculando el algoritmo 1? \vspace{1mm}

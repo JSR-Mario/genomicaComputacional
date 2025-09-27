@@ -1,0 +1,171 @@
+\item La estacionariedad es una característica propia de las series de tiempo. Una serie de tiempo es una sucesión de estados (valores) cuyo orden refleja un proceso cronológico. La formación de una secuencia de ADN o ARN puede ser modelada dentro de este paradigma. Decimos que una serie o secuencia es estacionaria si cada uno de los estados presentes en la misma provienen de una misma distribución de probabilidad. A continuación se te presentarán 5 secuencias de ADN de hebra simple en las que tu tarea consistirá en listar cuáles son estacionarias y cuáles no. Para lograr lo anterior se te recomienda: \vspace{02mm}
+
+\begin{enumerate}
+    \item[a)] Calcular la Esperanza y la Varianza de cada serie para distintas ventanas ”temporales”.
+
+    \item[b)] Recordar, qué tipo de variable aleatoria nos permite modelar la frecuencia de los nucleótidos en una secuencia de ADN.
+
+    \item[c)] Tu respuesta debe incluir, el código utilizado para responder la pregunta.
+
+\end{enumerate} \vspace{02mm}
+
+Secuencias: \vspace{02mm}
+
+\begin{verbatim}
+        0. CGGAGACTTTTCCACTGTCGTCGGAGTAGTAAAATAACGGTACGTCTTAGTGTGCACCATCGACTCTTT
+        GTATTGCTCGTTAGGGGTCGCAGCCTCTTGTTAAGCCGTAATGGGTGATCCCCGCTCGTGAAACGGTGCGAT
+        CCTGTGATCTGTCAGTATCGAAGGAGTGAAAAAGCGATTGCTAGCCGAGGCGTACCGTG
+
+        1. CGGAGTCCCCCCCACCGCCGCCGGTGCTGCATATCTACGGCACGCCCCAGTGTGCACCATCGACTCTTT
+        GTATTGCTCGTTAGGGGTCGCAGCCTCTTGTTAAGCCGTAATGGGTGATCCCCGCTCGTGAAACGGTGCGAT
+        CCTGTGATCTATTGATGTTAGCAACATAGCCGCATAGTTATTGATTACAATATCTTATA
+
+        2. CGGAGTCCCCCCCACCGCCGCCGGTGCTGCATATCTACGGCACGCCCCAGCGCGCTCCACCGACCCCCC
+        GCACCGCCCGCCAGGGGCCGCAGCCCCCCGCCATGCCGCTACGGGCGTCCCCCGCCCGCGATTCGGCGCGAC
+        CCCGCGACCCGCCTGCACCGTAGGAGCGTAATAGCGTCCGCCTGCCGAGGCGCACCGCG
+
+        3. CCCTACCCGGCAGACCCCTCCACGCCCCCCCGTAGCACCGGAACCAGATCCGCGGAGCGGGGAGGGAGG
+        CGGGGGGGGGAGGTCGGTCGGGGGTGGGGCGACAAGAGAGGAAACGGCAAGGGGAAGGGAGGAAAAGGAGTG
+        GAACGGAGGATTCATAGTAACTTGCGAAACGCACACGAAATGTGAACCATCACTACCAG
+\end{verbatim}
+\vspace{.3cm}
+\definecolor{bibi}{RGB}{1,103,148}
+
+ \textcolor{bibi}{Metodología}
+
+\begin{quote}
+    La idea que vamos a utilizar es, usar una distribución multinomial para describir
+    cuantas veces sale cada nucleótido en nuestro bloque y ventana. De manera intuitiva,
+    tomamos una secuencia que va a ser una cadena, formamos una ventana deslizante y vamos
+    calculando tanto esperanza (solo vamos a sacar las frecuencias relativas de cada letra)
+    como varianza (que tanto se aleja la la frecuencia en una ventana especifica con
+    respecto al promedio de todas las ventanas). Aquí el código de Python en Colab:    \vspace{.3cm}
+    {\fontsize{8}{10}\selectfont
+        \begin{minted}{Python}
+from collections import Counter
+import numpy as np
+import pandas as pd
+
+def clean_seq(seq):
+    return ''.join([c for c in seq.upper() if c in {'A','C','G','T'}])
+
+def sliding_windows(seq, w, step):
+    L = len(seq)
+    if w > L:
+        return
+    for i in range(0, L - w + 1, step):
+        yield seq[i:i+w], i
+
+def counts_and_freqs(window):
+    c = Counter(window)
+    n = len(window)
+    freqs = {b: c.get(b, 0) / n for b in ['A','C','G','T']}
+    return freqs
+
+def analyze_sequence(seq, window_sizes=[25,50,75,100], step=None):
+    seq = clean_seq(seq)
+    L = len(seq)
+
+    last_var_sum = -1
+
+    for w in window_sizes:
+        st = w // 4 if step is None else step
+        freqs_list = [counts_and_freqs(win) for win, _ in sliding_windows(seq, w, st)]
+
+        df_freqs = pd.DataFrame(freqs_list)
+        mean_freq = df_freqs.mean()
+        var_between = df_freqs.var(ddof=1)
+
+        print('' + '='*40)
+        print(f'Ventana w = {w}   (n_ventanas = {len(df_freqs)})')
+        print('-'*40)
+        print('Base | mean_freq | var_between')
+        for b in ['A','C','G','T']:
+            mf = mean_freq[b]
+            vb = var_between[b]
+            print(f"{b:>4}  | {mf:8.4f}   | {vb:10.6f}")
+        \end{minted}
+    }
+    \vspace{.3cm}
+
+    Como notas de este código, la parte de regresar un yield en vez de una lista
+    directamente es para guardar memoria pero en si no cambia mucho, ademas, las ventanas en
+    este caso se sobrelapan, por lo que no son independientes, hicimos pruebas con ventanas
+    de tamaños 25,50,75,100 para obtener varias ventanas en cada caso, usamos también pasos
+    de tamaño variable de un cuarto del tamaño de la ventana. La manera de calcular la
+    varianza esta medio rara pero esta aplicando esta formula:
+
+    $$s^2 = \frac{\sum_{i=1}^{n} (x_i - \bar{x})^2}{n - 1}$$
+
+    \vspace{.3cm}
+
+    Corriendo el código anterior en las diferentes secuencias de ADN obtenemos lo siguiente: 
+    \begin{enumerate}
+        \item Para la primera secuencia tenemos: 
+
+            \vspace{.3cm}
+            \begin{center}
+                \includegraphics[height=10cm]{Imagenes/Mario/3.3.1.png}
+            \end{center}
+            \vspace{.3cm}
+
+            Analizando, vemos que las frecuencias de los nucleótidos se mantienen
+            relativamente estables al aumentar el tamaño de las ventanas, ademas, la
+            varianza entre ventanas es relativamente chica, si sumamos la varianza de todos
+            los casos con tamaño de ventana de 50, obtenemos
+            $0.0028+0.0012+0.0013+0.0019=0.0072$ lo cual es relativamente bajo y podemos
+            decir con relativa confianza que es estacionaria, ademas, a medida que hacemos
+            mas grande la ventana esta varianza decrece bastante. \vspace{.3cm}
+
+        \item Para la segunda secuencia tenemos:
+
+            \vspace{.3cm}
+            \begin{center}
+                \includegraphics[height=10cm]{Imagenes/Mario/3.3.2.png}
+            \end{center}
+            \vspace{.3cm}
+
+            Igualmente tenemos que las frecuencias relativas no cambian mucho dependiendo
+            del tamaño de la ventana, esto es buena señal, sin embargo, si sumamos la
+            varianza de todos en la ventana de tamaño 50 obtenemos
+            $0.0027+0.0082+0.0014+0.0048=0.0171$ que es mas del doble de varianza de la
+            anterior, lo cual no es tan buena señal, podemos decir con baja confianza que
+            esta secuencia puede no ser estacionaria pero como digo no es 100\%.
+            \vspace{.3cm}
+
+        \item Para la tercera secuencia tenemos:
+
+            \vspace{.3cm}
+            \begin{center}
+                \includegraphics[height=10cm]{Imagenes/Mario/3.3.3.png}
+            \end{center}
+            \vspace{.3cm}
+
+            En este caso la frecuencia relativa cambia un poco mas, especialmente si vemos
+            el caso de la "C", sin embargo, el resto mantiene una frecuencia relativamente
+            estable por lo que no es concluyente. Si nos pasamos al análisis de la varianza
+            obtenemos que $0.0009+0.0039+0.0013+0.0014=0.0075$ que es casi la misma
+            varianza que la primera por lo que decimos con algo de confianza que es
+            estacionaria, aunque el nucleótido "C" parece variar bastante mas especialmente
+            si vemos el caso de ventanas de tamaño 25 donde tiene una varianza de $0.011$
+            indicando ventanas ricas en este nucleótido, 80/20 en este caso. \vspace{.3cm}
+
+        \item Para la cuarta secuencia tenemos:
+
+            \vspace{.3cm}
+            \begin{center}
+                \includegraphics[height=10cm]{Imagenes/Mario/3.3.4.png}
+            \end{center}
+            \vspace{.3cm}
+
+            En este caso vemos que las frecuencias se mueven bastante si cambiamos el
+            tamaño de las ventanas, por ejemplo , en el nucleótido "G" pasa de una
+            frecuencia de $.41$ en la primera a $.49$ en las ventanas de tamaño $75$ esto
+            ya es una mala señal. Si analizamos la varianza en el caso de las ventanas de
+            tamaño $50$, tenemos que la varianza es de
+            $0.0123+0.0228+0.02864+0.0024=0.066$, casi 4 veces mas que el mas alto y casi 9
+            veces mas alto que los mas chicos; con esto, podemos concluir con alta
+            confianza que esta secuencia no es estacionaria.
+    \end{enumerate}
+\end{quote}
+        

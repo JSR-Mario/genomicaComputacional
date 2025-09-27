@@ -1,0 +1,120 @@
+\item \textbf{En la siguiente secuencia $TATAATCGTATTGTACTAATATTGTATATATA$ reporta la posición de
+    cada uno de los siguientes patrones}
+\[
+\{ATT, ATC, CTA, GTA, ATAT\}
+\]
+\textbf{usando Aho-Corasick. También reporta el autómata correspondiente.} \vspace{.3cm}
+
+\definecolor{bibi}{RGB}{0,103,148}
+
+\textcolor{bibi}{Usando Aho-Corasick en Colab}
+
+\begin{quote}
+
+    Para el desarrollo de este ejercicio utilice una pequeña implementación del algoritmo de
+    Aho-Corasick escrito en Python 3 usando Colab. La idea es construir un trie (arbol de
+    prefijos) con los patrones, después usar BFS para encontrar los "fails" que son cuando dado
+    una cadena, no encontramos la siguiente letra del texto en nuestros patrones y
+    regresamos al sufijo que también es prefijo mas grande, trivialmente todos tienen como fail
+    "" o el nodo raíz. Finalmente, recorremos el texto y buscamos si segun nuestro trie, hay
+    coincidencia o no, usando los fails para regresar y los "next" para seguir. Aqui la clase:
+
+    {\fontsize{8}{10}\selectfont
+        \begin{minted}{Python}
+from collections import deque, defaultdict
+from typing import List, Dict, Tuple
+
+class AhoCorasick:
+    def __init__(self, patterns: List[str]):
+        self.nodes = [{'next': {}, 'fail': 0, 'out': []}]  
+        self._build_trie(patterns)
+        self._build_failure_links()
+
+    def _add_node(self):
+        self.nodes.append({'next': {}, 'fail': 0, 'out': []})
+        return len(self.nodes) - 1
+
+    def _build_trie(self, patterns: List[str]):
+        for pat in patterns:
+            node = 0
+            for ch in pat:
+                if ch not in self.nodes[node]['next']:
+                    nxt = self._add_node()
+                    self.nodes[node]['next'][ch] = nxt
+                node = self.nodes[node]['next'][ch]
+            self.nodes[node]['out'].append(pat)
+
+    def _build_failure_links(self):
+        q = deque()
+        for ch, nxt in list(self.nodes[0]['next'].items()):
+            self.nodes[nxt]['fail'] = 0
+            q.append(nxt)
+
+        # BFS
+        while q:
+            r = q.popleft()
+            for ch, s in list(self.nodes[r]['next'].items()):
+                q.append(s)
+                state = self.nodes[r]['fail']
+                while state != 0 and ch not in self.nodes[state]['next']:
+                    state = self.nodes[state]['fail']
+                self.nodes[s]['fail'] = self.nodes[state]['next'].get(ch, 0) if \
+                                          ch in self.nodes[state]['next'] else 0
+                self.nodes[s]['out'] += self.nodes[self.nodes[s]['fail']]['out']
+
+    def search(self, text: str) -> List[Tuple[int,int,str]]:
+        results = []
+        node = 0
+        for i, ch in enumerate(text):
+            while node != 0 and ch not in self.nodes[node]['next']:
+                node = self.nodes[node]['fail']
+            node = self.nodes[node]['next'].get(ch, 0) if ch in self.nodes[node]['next'] else 0
+            if self.nodes[node]['out']:
+                for pat in self.nodes[node]['out']:
+                    start = i - len(pat) + 1
+                    end = i 
+                    results.append((start, end, pat))
+        return results
+        \end{minted}
+    }
+
+    Utlizando el codigo anterior podemos obtener los siguientes resultados:
+    \vspace{.3cm}
+    \begin{center}
+        \includegraphics[width=.5\textwidth]{Imagenes/Mario/3.1.png}
+    \end{center}
+    \vspace{.3cm}
+
+    Lo cual coincide con una búsqueda a mano. Si pedimos a GPT que nos cree un codigo para
+    visualizar el automata que creamos usara este codigo: 
+
+    {\fontsize{8}{10}\selectfont
+        \begin{minted}{Python}
+from graphviz import Source
+
+dot_lines = ["digraph aho {", "  rankdir=LR;", "  node [shape=record];"]
+for idx, node in enumerate(ac.nodes):
+    out_join = ','.join(node['out']) if node['out'] else '-'
+    label = f"<s>State {idx}|out: {out_join}"
+    dot_lines.append(f"  n{idx} [label=\"{label}\"];")
+
+for idx, node in enumerate(ac.nodes):
+    for ch, nxt in node['next'].items():
+        dot_lines.append(f"  n{idx} -> n{nxt} [label=\"{ch}\"];")
+    if node['fail'] != 0:
+        dot_lines.append(f"  n{idx} -> n{node['fail']} [style=dashed,label=\"fail\"];")
+dot_lines.append("}")
+dot_graph = "\n".join(dot_lines)
+
+Source(dot_graph)
+        \end{minted}
+    }
+
+    Y nos dara el siguiente automata:
+
+    \vspace{.3cm}
+    \begin{center}
+        \includegraphics[width=.9\textwidth]{Imagenes/Mario/3.1.2.png}
+    \end{center}
+    \vspace{.3cm}
+\end{quote}
