@@ -16,7 +16,14 @@ datasets download genome accession --inputfile accessions.txt --include genome
 unzip -o ncbi_dataset.zip
 
 # Mover y renombrar para fácil acceso
-cp ncbi_dataset/data/GCF_*/GCF_*_genomic.fna data/genomes/
+cp ncbi_dataset/data/GCF_000005845.2/*.fna data/genomes/K12_Reference.fasta
+cp ncbi_dataset/data/GCF_000026545.1/*.fna data/genomes/EPEC_Pathogen.fasta
+cp ncbi_dataset/data/GCF_000008865.2/*.fna data/genomes/EHEC_Pathogen.fasta
+cp ncbi_dataset/data/GCF_000010485.1/*.fna data/genomes/SE11_Commensal.fasta
+cp ncbi_dataset/data/GCF_000006665.1/*.fna data/genomes/EHEC_EDL933.fasta
+cp ncbi_dataset/data/GCF_000007445.1/*.fna data/genomes/UPEC_CFT073.fasta
+cp ncbi_dataset/data/GCF_000714595.1/*.fna data/genomes/Nissle_Probiotic.fasta
+cp ncbi_dataset/data/GCF_000027125.1/*.fna data/genomes/EAEC_042.fasta
 
 # Limpieza
 rm -rf ncbi_dataset ncbi_dataset.zip 
@@ -27,6 +34,8 @@ rm -rf ncbi_dataset ncbi_dataset.zip
 # --mincov 80: Cobertura mínima 80%
 abricate --db vfdb --minid 90 --mincov 80 data/genomes/*.fasta > results/virulence_report.tab
 
-# Ejecutar el script
+# Ejecutar los scripts
 python3 scripts/plot_matrix.py
+python3 scripts/plot_counts.py
+python3 scripts/util.py
 ```
