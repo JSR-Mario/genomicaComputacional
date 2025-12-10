@@ -22,7 +22,7 @@ matrix_filtered = matrix.loc[:, matrix.sum(axis=0) < num_strains]
 matrix_filtered = matrix_filtered.loc[:, matrix_filtered.sum(axis=0) > 0]
 
 print(f"Dimensiones tras filtrado: {matrix_filtered.shape} (Se eliminaron genes comunes/vacíos)")
-# ----------------------------
+
 # Configuración del Gráfico
 width = 10 #max(10, matrix_filtered.shape[1] * 0.05)
 height = 8 
@@ -30,7 +30,6 @@ height = 8
 plt.figure(figsize=(width, height))
 
 try:
-    # Usamos clustermap pero ajustamos la fuente
     g = sns.clustermap(matrix_filtered, 
                        metric='jaccard', 
                        method='average', 
@@ -38,13 +37,12 @@ try:
                        linewidths=0.5, 
                        linecolor='gray',
                        figsize=(width, height),
-                       # dendrogram_ratio=(0.1, 0.2), # Árboles pequeños para dar espacio a la matriz
+                       # dendrogram_ratio=(0.1, 0.2)
                        cbar_pos=None) 
 
-    # Ajuste fino de etiquetas
-    # Eje X (Genes): Fuente pequeña
+    # Eje X (Genes)
     plt.setp(g.ax_heatmap.get_xticklabels(), rotation=90, fontsize=8)
-    # Eje Y (Genomas): Fuente grande y horizontal
+    # Eje Y (Genomas)
     plt.setp(g.ax_heatmap.get_yticklabels(), rotation=0, fontsize=12, fontweight='bold')
 
     # Guardar
